@@ -28,6 +28,8 @@ def btn_click(btn):
                 e.delete(0, END)
                 current_operator = btn
             elif btn == '=':
+                if current_operator is None:
+                    return
                 new_num = int(e.get())
                 e.delete(0, END)
                 if current_operator == '+':
@@ -41,7 +43,7 @@ def btn_click(btn):
                         e.insert(0, 'error')
                     else:
                         e.insert(0, str(last_num // new_num))
-
+                current_operator = None
 
 
 num_1 = Button(root, text='1', padx = 40, pady = 20, command=lambda: btn_click('1'))
@@ -79,6 +81,5 @@ btn_multiply.grid(row=3, column=3)
 btn_div.grid(row=4, column=3)
 btn_calculate.grid(row=4, column=1)
 btn_clear.grid(row=4, column=2)
-
 
 root.mainloop()
