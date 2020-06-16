@@ -6,11 +6,11 @@ root.title("Calculator")
 e = Entry(root, width=50, borderwidth=5)
 e.grid(row=0,column=0, columnspan=4, padx=10, pady=10)
 
-current_num = 0
-current_dey = None
+last_num = 0
+current_operator = None
 
 def btn_click(btn):
-    global current_num, current_dey
+    global last_num, current_operator
     if btn == 'c':
         e.delete(0, END)
     else:
@@ -19,29 +19,28 @@ def btn_click(btn):
             e.insert(0, 'error')
         else:
             if '0' <= btn <= '9':
-                print(btn)
                 e.insert(END, btn)
             elif btn in ['+', '-', '*', '/']:
                 if btn == '-' and not e.get():
                     e.insert(0, btn)
                     return
-                current_num = int(e.get())
+                last_num = int(e.get())
                 e.delete(0, END)
-                current_dey = btn
+                current_operator = btn
             elif btn == '=':
-                newnum = int(e.get())
+                new_num = int(e.get())
                 e.delete(0, END)
-                if current_dey == '+':
-                    e.insert(0, str(current_num + newnum))
-                elif current_dey == '-':
-                    e.insert(0, str(current_num - newnum))
-                elif current_dey == '*':
-                    e.insert(0, str(current_num * newnum))
-                elif current_dey == '/':
-                    if newnum == 0:
-                        e.insert(0, 'чел...')
+                if current_operator == '+':
+                    e.insert(0, str(last_num + new_num))
+                elif current_operator == '-':
+                    e.insert(0, str(last_num - new_num))
+                elif current_operator == '*':
+                    e.insert(0, str(last_num * new_num))
+                elif current_operator == '/':
+                    if new_num == 0:
+                        e.insert(0, 'error')
                     else:
-                        e.insert(0, str(current_num // newnum))
+                        e.insert(0, str(last_num // new_num))
 
 
 
@@ -58,10 +57,10 @@ num_0 = Button(root, text='0', padx = 40, pady = 20, command=lambda: btn_click('
 
 btn_plus = Button(root, text='+', padx=39, pady = 20, command=lambda: btn_click('+'))
 btn_minus = Button(root, text='-', padx = 40, pady = 20, command=lambda: btn_click('-'))
-btn_umnozh = Button(root, text='*', padx = 40, pady = 20, command=lambda: btn_click('*'))
-btn_delit = Button(root, text='/', padx = 40, pady = 20, command=lambda: btn_click('/'))
+btn_multiply = Button(root, text='*', padx = 40, pady = 20, command=lambda: btn_click('*'))
+btn_div = Button(root, text='/', padx = 40, pady = 20, command=lambda: btn_click('/'))
 btn_clear = Button(root, text='C', padx = 39, pady = 20, command=lambda: btn_click('c'))
-btn_ravno = Button(root, text='=', padx = 39, pady = 20, command=lambda: btn_click('='))
+btn_calculate = Button(root, text='=', padx = 39, pady = 20, command=lambda: btn_click('='))
 
 num_1.grid(row=1, column=0)
 num_2.grid(row=1, column=1)
@@ -76,13 +75,10 @@ num_0.grid(row=4, column=0)
 
 btn_plus.grid(row=1, column=3)
 btn_minus.grid(row=2, column=3)
-btn_umnozh.grid(row=3, column=3)
-btn_delit.grid(row=4, column=3)
-btn_ravno.grid(row=4, column=1)
+btn_multiply.grid(row=3, column=3)
+btn_div.grid(row=4, column=3)
+btn_calculate.grid(row=4, column=1)
 btn_clear.grid(row=4, column=2)
-
-
-
 
 
 root.mainloop()
