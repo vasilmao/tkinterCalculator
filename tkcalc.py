@@ -21,6 +21,7 @@ def parse(s):
             if cur:
                 digits.append(float(cur) if '.' in cur else int(cur))
                 cur = ""
+                operations.append('*')
             skobcnt = 1
             endd = -1
             for j in range(i + 1, len(s)):
@@ -38,6 +39,8 @@ def parse(s):
             i = endd + 1
         elif s[i].isdigit() or s[i] == '.':
             cur += s[i]
+            if s[i - 1] == ')':
+                operations.append('*')
             i += 1
         elif s[i] in ['+', '-', '*', '/']:
             if cur:
@@ -47,31 +50,40 @@ def parse(s):
             i += 1
     if cur:
         digits.append(float(cur) if '.' in cur else int(cur))
-    #print(digits)
-    #print(operations)
-    while operations:
-        if '*' in operations:
-            f = operations.index('*')
-            num1 = digits.pop(f)
-            num2 = digits.pop(f)
-            operations.pop(f)
-            digits.insert(f, num1 * num2)
-        elif '/' in operations:
-            f = operations.index('/')
-            num1 = digits.pop(f)
-            num2 = digits.pop(f)
-            operations.pop(f)
-            digits.insert(f, num1 / num2)
+    print(digits)
+    print(operations)
+    cur = digits[0]
+    flags = [False for i in range(len(digits))]
+    for i in range(len(operations)):
+        if operations[i] in '*/':
+            flags[i] = True
+    j = -1
+    cur = 0
+    cur_operation = '+'
+    while j < len(operations):
+        if j >= 0:
+            cur_operation = operations[j]
+        if flags[j + 1] == True:
+            j += 1
+            cur1 = digits[j]
+            while j < len(operations) and operations[j] in '*/':
+                if operations[j] == '*':
+                    cur1 *= digits[j + 1]
+                elif operations[j] =='/':
+                    cur1 /= digits[j + 1]
+                j += 1
+            if cur_operation == '+':
+                cur += cur1
+            elif cur_operation == '-':
+                cur -= cur1
         else:
-            cur = digits[0]
-            for i in range(1, len(digits)):
-                if operations[i - 1] == '+':
-                    cur += digits[i]
-                else:
-                    cur -= digits[i]
-            operations = []
-            digits = [cur]
-    return digits[0]
+            x = digits[j + 1]
+            if cur_operation == '+':
+                cur += x
+            elif cur_operation == '-':
+                cur -= x
+            j += 1
+    return cur
 
 def btn_click(btn):
     if btn in '0123456789+-*/().':
