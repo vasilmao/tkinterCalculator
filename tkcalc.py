@@ -9,41 +9,83 @@ e.grid(row=0,column=0, columnspan=4, padx=10, pady=10)
 last_num = 0
 current_operator = None
 
-def btn_click(btn):
-    global last_num, current_operator
-    if btn == 'c':
-        e.delete(0, END)
-    else:
-        if not all(('0' <= i <= '9' or i == '-') for i in e.get()):
-            e.delete(0, END)
-            e.insert(0, 'error')
+def parse(s):
+    cur = ""
+    digits = []
+    operations = []
+    if s.startswith("-"):
+        s = "0" + s
+    i = 0
+    while i < len(s):
+        if s[i] == '(':
+            if cur:
+                digits.append(float(cur) if '.' in cur else int(cur))
+                cur = ""
+            skobcnt = 1
+            endd = -1
+            for j in range(i + 1, len(s)):
+                if s[j] == '(':
+                    skobcnt += 1
+                elif s[j] == ')':
+                    skobcnt -= 1
+                if skobcnt == 0:
+                    endd = j
+                    break
+            if endd == -1:
+                endd = len(s)
+            res = parse(s[i + 1 : endd])
+            digits.append(res)
+            i = endd + 1
+        elif s[i].isdigit() or s[i] == '.':
+            cur += s[i]
+            i += 1
+        elif s[i] in ['+', '-', '*', '/']:
+            if cur:
+                digits.append(float(cur) if '.' in cur else int(cur))
+            operations.append(s[i])
+            cur = ""
+            i += 1
+    if cur:
+        digits.append(float(cur) if '.' in cur else int(cur))
+    #print(digits)
+    #print(operations)
+    while operations:
+        if '*' in operations:
+            f = operations.index('*')
+            num1 = digits.pop(f)
+            num2 = digits.pop(f)
+            operations.pop(f)
+            digits.insert(f, num1 * num2)
+        elif '/' in operations:
+            f = operations.index('/')
+            num1 = digits.pop(f)
+            num2 = digits.pop(f)
+            operations.pop(f)
+            digits.insert(f, num1 / num2)
         else:
-            if '0' <= btn <= '9':
-                e.insert(END, btn)
-            elif btn in ['+', '-', '*', '/']:
-                if btn == '-' and not e.get():
-                    e.insert(0, btn)
-                    return
-                last_num = int(e.get())
-                e.delete(0, END)
-                current_operator = btn
-            elif btn == '=':
-                if current_operator is None:
-                    return
-                new_num = int(e.get())
-                e.delete(0, END)
-                if current_operator == '+':
-                    e.insert(0, str(last_num + new_num))
-                elif current_operator == '-':
-                    e.insert(0, str(last_num - new_num))
-                elif current_operator == '*':
-                    e.insert(0, str(last_num * new_num))
-                elif current_operator == '/':
-                    if new_num == 0:
-                        e.insert(0, 'error')
-                    else:
-                        e.insert(0, str(last_num // new_num))
-                current_operator = None
+            cur = digits[0]
+            for i in range(1, len(digits)):
+                if operations[i - 1] == '+':
+                    cur += digits[i]
+                else:
+                    cur -= digits[i]
+            operations = []
+            digits = [cur]
+    return digits[0]
+
+def btn_click(btn):
+    if btn in '0123456789+-*/().':
+        e.insert(END, btn)
+    elif btn == 'del':
+        e.delete(len(e.get()) - 1, END)
+    elif btn == 'c':
+        e.delete(0, END)
+    elif btn == '=':
+        ss = e.get()
+        e.delete(0, END)
+        result = parse(ss)
+        e.insert(0, str(result))
+
 
 
 num_1 = Button(root, text='1', padx = 40, pady = 20, command=lambda: btn_click('1'))
@@ -57,12 +99,17 @@ num_8 = Button(root, text='8', padx = 40, pady = 20, command=lambda: btn_click('
 num_9 = Button(root, text='9', padx = 40, pady = 20, command=lambda: btn_click('9'))
 num_0 = Button(root, text='0', padx = 40, pady = 20, command=lambda: btn_click('0'))
 
+btn_skobka1 = Button(root, text='(', padx=40, pady=20, command=lambda: btn_click('('))
+btn_skobka2 = Button(root, text=')', padx=40, pady=20, command=lambda: btn_click(')'))
+btn_point = Button(root, text='.', padx=40, pady=20, command=lambda: btn_click('.'))
+
 btn_plus = Button(root, text='+', padx=39, pady = 20, command=lambda: btn_click('+'))
 btn_minus = Button(root, text='-', padx = 40, pady = 20, command=lambda: btn_click('-'))
 btn_multiply = Button(root, text='*', padx = 40, pady = 20, command=lambda: btn_click('*'))
 btn_div = Button(root, text='/', padx = 40, pady = 20, command=lambda: btn_click('/'))
 btn_clear = Button(root, text='C', padx = 39, pady = 20, command=lambda: btn_click('c'))
 btn_calculate = Button(root, text='=', padx = 39, pady = 20, command=lambda: btn_click('='))
+btn_del_one = Button(root, text='←', padx=39, pady=20, command=lambda: btn_click('del'))
 
 num_1.grid(row=1, column=0)
 num_2.grid(row=1, column=1)
@@ -74,12 +121,16 @@ num_7.grid(row=3, column=0)
 num_8.grid(row=3, column=1)
 num_9.grid(row=3, column=2)
 num_0.grid(row=4, column=0)
+btn_skobka1.grid(row=4, column=1)
+btn_skobka2.grid(row=4, column=2)
 
 btn_plus.grid(row=1, column=3)
 btn_minus.grid(row=2, column=3)
 btn_multiply.grid(row=3, column=3)
 btn_div.grid(row=4, column=3)
-btn_calculate.grid(row=4, column=1)
-btn_clear.grid(row=4, column=2)
+btn_calculate.grid(row=5, column=0)
+btn_clear.grid(row=5, column=1)
+btn_point.grid(row=5, column=2)
+btn_del_one.grid(row=5, column=3)
 
 root.mainloop()
